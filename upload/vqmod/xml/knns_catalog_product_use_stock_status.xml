@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<modification
+		xmlns="https://github.com/vqmod/vqmod"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="https://github.com/vqmod/vqmod https://raw.githubusercontent.com/vqmod/vqmod/master/vqmod.xsd"
+		>
+		<id><![CDATA[[VQMOD] Use of stock_status in product page]]></id>
+		<version>0.1.0</version>
+		<vqmver>2.6.6</vqmver>
+		<author>kanenas.net (aka Nikolas Branis) - nbran@kanenas.net</author>
+		<file path="catalog/model/catalog/" name="product.php" error="log">
+			<operation error="skip">
+				<search position="after"><![CDATA['stock_status'     => $query->row['stock_status'],]]></search>
+				<add><![CDATA[				'stock_status_id'  => $query->row['stock_status_id'],]]></add>
+			</operation>
+		</file>
+		<file path="catalog/controller/product/" name="product.php" error="log">
+			<operation error="skip">
+				<search position="after"><![CDATA[$data['model'] = $product_info['model'];]]></search>
+				<add><![CDATA[
+			$data['knns_product_stock_status'] = $product_info['stock_status'];
+			$data['knns_stock_status_id'] = $product_info['stock_status_id'];
+				]]></add>
+			</operation>
+		</file>
+		<file path="catalog/view/theme/journal3/template/product/" name="product.tpl" error="log">
+			<operation error="skip">
+				<search position="replace"><![CDATA[<li class="product-stock <?php if ($product_quantity > 0): ?>in-stock<?php else: ?>out-of-stock<?php endif; ?>"><b><?php echo $j3->settings->get($stylePrefix . 'ProductStockText'); ?>:</b> <span><?php echo $stock; ?></span></li>]]></search>
+				<add><![CDATA[
+					<?php
+					/*
+					Εξαντλήθηκε = 9
+					*/
+					?>
+					<li class="knns-product-stock <?php if ( (int) $knns_stock_status_id === 9 ): ?>out-of-stock<?php else: ?>in-stock<?php endif; ?>"><?php echo '<span>' . $knns_product_stock_status . '</span>'; ?></li>
+				]]></add>
+			</operation>
+			<operation error="skip">
+				<search position="replace"><![CDATA[<?php if ($j3->settings->get('catalogCartStatus')): ?>]]></search>
+				<add><![CDATA[
+              <?php
+              /*
+              Άμεση παραλαβή / Παράδoση 1 έως 3 ημέρες = 7
+              Παράδοση σε 1 - 3 ημέρες                 = 6
+              Παράδοση σε 4 - 10 ημέρες                = 8
+              Παράδοση έως 30 ημέρες                   = 5
+              */
+              ?>
+              <?php if ( $j3->settings->get('catalogCartStatus') && ( (int) $knns_stock_status_id === 7 || (int) $knns_stock_status_id === 6 || (int) $knns_stock_status_id === 8 || (int) $knns_stock_status_id === 5 ) ) : ?>
+				]]></add>
+			</operation>
+		</file>
+	</modification>
